@@ -1,0 +1,50 @@
+{
+ "Version": "2012-10-17",
+ "Statement": [{
+ "Sid": "LambdaLogging",
+ "Effect": "Allow",
+ "Action": [
+ "logs:CreateLogGroup",
+ "logs:CreateLogStream",
+ "logs:PutLogEvents"
+ ],
+ "Resource": ”*"
+ },
+ {
+ "Sid": "SNS",
+ "Action": [
+ "sns:Publish"
+ ],
+ "Effect": "Allow",
+ "Resource": "*"
+ },
+ {
+ "Sid": "EC2",
+ "Action": [
+ "ec2:CreateNetworkInterface",
+ "ec2:Describe*",
+ "ec2:AttachNetworkInterface",
+ "ec2:DeleteNetworkInterface"
+ ],
+ "Effect": "Allow",
+ "Resource": "*"
+ },
+ {
+ "Sid": "ELB",
+ "Action": [
+ "elasticloadbalancing:Describe*"
+ ],
+ "Effect": "Allow",
+ "Resource": "*"
+ },
+ {
+ "Sid": "CW",
+ "Action": [
+ "cloudwatch:putMetricData"
+ ],
+ "Effect": "Allow",
+ "Resource": "*"
+ }
+ ]
+}
+

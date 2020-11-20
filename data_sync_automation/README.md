@@ -7,58 +7,7 @@ This solution is an example that can be used as a starting point for implementin
 ## Pre-requisites
 As a starting point, we will assume that QRadar is already configured with a Main Site and Destination Site each in separate subnets and separate AZs but in the same VPC.  The example presented here represents Main and Destination deployments each with one Console and one Event Processor and with the Data Synchronization solution already set up. The reader should be familiar with this solution before attempting to add automation. See [Data Synchronization app Overview](https://www.ibm.com/support/knowledgecenter/SS42VS_SHR/com.ibm.dsapp.doc/c_Qapps_DS_intro.html)
 ## Step 1 - create an IAM policy and Role
-We will need an IAM policy to grant the Lambda function access to LoadBalancers, permit logging and so forth
-```
-{
- "Version": "2012-10-17",
- "Statement": [{
- "Sid": "LambdaLogging",
- "Effect": "Allow",
- "Action": [
- "logs:CreateLogGroup",
- "logs:CreateLogStream",
- "logs:PutLogEvents"
- ],
- "Resource": ”*"
- },
- {
- "Sid": "SNS",
- "Action": [
- "sns:Publish"
- ],
- "Effect": "Allow",
- "Resource": "*"
- },
- {
- "Sid": "EC2",
- "Action": [
- "ec2:CreateNetworkInterface",
- "ec2:Describe*",
- "ec2:AttachNetworkInterface",
- "ec2:DeleteNetworkInterface"
- ],
- "Effect": "Allow",
- "Resource": "*"
- },
- {
- "Sid": "ELB",
- "Action": [
- "elasticloadbalancing:Describe*"
- ],
- "Effect": "Allow",
- "Resource": "*"
- },
- {
- "Sid": "CW",
- "Action": [
- "cloudwatch:putMetricData"
- ],
- "Effect": "Allow",
- "Resource": "*"
- }
- ]
-}
-```
+We will need an IAM policy to grant the Lambda function access to LoadBalancers, permit logging and so forth. In AWS IAM, create a new policy using the JSON in iam-policy.json.
 ## Step 2 - create an SNS topic
 ## Step 3 - create a CloudWatch Alarm
 ## Step 4 - create a Lambda function
