@@ -11,6 +11,9 @@ We will need an IAM policy to grant the Lambda function access to LoadBalancers,
 
 Create an IAM role that can be assigned to the Lambda function and assign the newly created IAM policy to it. From the IAM -> roles page, create role, choose Lambda as the use case and attach the policy. Again, choose a name that is relevant (e.g. manage_failover).
 ## Step 2 - create an SNS topic
+The Lambda function needs a trigger for execution when a CloudWatch Alarm fires. Setup an SNS topic to receive notification when the alarm state happens. CloudWatch will send the notification this topic and the Lambda function will be triggered by that notification.
+
+In SNS -> Topics, create a topic. Make sure to set the type to Standard (FIFO types cannot be used as Lambda triggers). The name should be meaningful (e.g. manage_failover_trigger). None of the optional sections are required, click Create topic at the bottom.
 ## Step 3 - create a CloudWatch Alarm
 ## Step 4 - create a Lambda function
 ## Step 5 - configure the Lambda function
