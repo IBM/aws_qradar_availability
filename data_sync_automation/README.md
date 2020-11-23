@@ -6,6 +6,14 @@ AWS' Elastic Load Balancers provide CloudWatch metrics related to 'health' of ho
 This solution is an example that can be used as a starting point for implementing highly resilient collection that can recover from the loss of an AZ and quickly resume service with near zero data loss (depending on collection protocol).
 ## Pre-requisites
 As a starting point, we will assume that QRadar is already configured with a Main Site and Destination Site each in separate subnets and separate AZs but in the same VPC.  The example presented here represents Main and Destination deployments each with one Console and one Event Processor and with the Data Synchronization solution already set up. The reader should be familiar with this solution before attempting to add automation. See [Data Synchronization app Overview](https://www.ibm.com/support/knowledgecenter/SS42VS_SHR/com.ibm.dsapp.doc/c_Qapps_DS_intro.html)
+### Modify the DataSync failover behaviour
+By default, when the Destination site is activated an interactive deploy action is required. This cannot be automated by the API but it can be automated on the QRadar hosts themselves.  Copy the `aut-ingress-restart.sh` script to every host in each deployment and execute it on each host. This will setup a cron job that will automatically restart ecs-ec-ingress according to the DR configuration and state.
+### Set up a load balancer
+There are two steps for this: create a target group that includes the Event Processors from both deployments and then create a Network Loadbalancer that will listen for incoming event sources (it is recommended that DLC be used for this scenario) and forward to the target group on the correct port (32500 for DLC).
+
+In Create Target Group, choose IP address type and TCP protocol, provide the port number for collection (32500) and then select the VPC hosting the QRadar deployments. Next, register each of the Event Processors from both deployments and create the target group.
+
+In and exsting Load Balancer or a new one, navigate to the Listeners tab and add a listener for the target group, same port number.
 ## Step 1 - create an IAM policy and Role
 We will need an IAM policy to grant the Lambda function access to LoadBalancers, permit logging and so forth. In AWS IAM, create a new policy using the JSON in iam-policy.json and give it a meaningful name (e.g. manage_failover).
 
@@ -34,5 +42,7 @@ Now, configure the trigger for the lambda function so that it will execute when 
 * MAIN_SITE_TOKEN: an API token from the destination site with admin privileges
 * NAMESPACE: AWS/NetworkELB
 * SNS_TOPIC: the topic ARN from the second SNS topic created above
+# Next Steps
+The failover automation is now in place. End-to-end testing will involve making one of the EPs in the Main site unvailable via the load balancer. This can be done by shutting it down, changing it's security group or any other method of interrupting the collection. With the defaults described above it will take several minutes. The failover can also be triggered by executing the labda function directly with a test event to simulate the Unhealthy target alarm and this is a good way to confirm the correct configuration and operation of the lambda function.
 
-
+Once an automated failover has occurred, returning service back to the main site can be done via the Data Synchromization App according to it's [documentation] (https://www.ibm.com/support/knowledgecenter/SS42VS_SHR/com.ibm.dsapp.doc/c_Qapps_DS_intro.html)
