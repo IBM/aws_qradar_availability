@@ -21,5 +21,18 @@ Specify the conditions under which this metric will cause an alarm to be raised.
 
 Configure the action to take when the alarm is raised. make sure the state is 'in Alarm' and select the SNS topic created above. Click next at the bottom and name the alarm (e.g. Main Site UnHealthyHostCount). Click next and then Create alarm.
 ## Step 4 - create a Lambda function
+In Lambda -> Functions, create a new function. Select 'Author from scratch'. In the Basic Information Panel, give the function a name (e.g. manage_failover), choose a Python 2.7 Runtime and Change the default execution role to the role created above (e.g. manage_failover).
+
+In Advanced settings select the VPC of the deployment and then select all the subnets tha host the Main and Dest consoles. Choose a security group that will allow the Lambda funtion to communicate with the consoles (i.e. via HTTPS). This step is important as it allows the lambda function to reach the QRadar REST APIs.
 ## Step 5 - configure the Lambda function
+In the lambda page, find the Runtime settings panel and change the handler to manage_failover.lambda_handler so that Lambda can find the function in the zip file. In the Function code panel, choose Upload a .zip file from the Actions drop down and upload the manage_failover.py zip file. Finally in Basic settings, increase the timeout from the default 3 seconds to a more reasonable value like 5 minutes.  Be sure to allow enough time for the function to make multiple QRadar API calls.
+
+Now, configure the trigger for the lambda function so that it will execute when the CloudWatch Alarm fires. Click '+ Add trigger' and select SNS. Choose the correct topic (e.g. manage_failover_trigger). Finally, in the Environment panel, add the following variables:
+* DEST_SITE_ADDRESS: the IP address of the console at the destination site
+* DEST_SITE_TOKEN: an API token from the destination site with admin privileges
+* MAIN_SITE_ADDRESS: the IP address of the console at the destination site
+* MAIN_SITE_TOKEN: an API token from the destination site with admin privileges
+* NAMESPACE: AWS/NetworkELB
+* SNS_TOPIC: the topic ARN from the second SNS topic created above
+
 
