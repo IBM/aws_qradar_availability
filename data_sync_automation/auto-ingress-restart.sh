@@ -41,6 +41,9 @@ fi
 if [ "$SITE_ID" == "MAIN" ] && [ "$site_state" == "STANDBY" ] && [ -f "$INGRESS_JAR_CHECK" ]; then
 	systemctl restart ecs-ec-ingress
 fi
+if [ "$SITE_ID" == "MAIN" ] && [ "$site_state" == "ACTIVE" ] && [ ! -f "$INGRESS_JAR_CHECK" ]; then
+        systemctl restart ecs-ec-ingress
+fi
 
 # if this is destination site and ingress touchfile exists,
 # delete it and restart ingress
