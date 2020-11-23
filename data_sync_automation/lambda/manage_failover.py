@@ -117,7 +117,7 @@ def lambda_handler(event, context):
 					dr_config_main_json['site_state'] = 'STANDBY'
 					dr_config_dest_json['ariel_copy_enabled'] = False
 					logger.info(json.dumps(dr_config_dest_json,indent=3,sort_keys=True))
-					main_result = requests.post("{}{}".format(main_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"},data=json.dumps(dr_config_main_json))
+					main_result = requests.post("{}{}".format(main_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(dr_config_main_json))
 					if main_result.status_code != 200:
 						print("main post config failed")
 						api_in_error = True
@@ -128,10 +128,10 @@ def lambda_handler(event, context):
 							for profile in ariel_copy_main_json:
 								profile['enabled'] = False
 							logger.info(json.dumps(ariel_copy_main_json,indent=3,sort_keys=True))
-							#copy_result=requests.post("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(ariel_copy_main_json))
+							copy_result=requests.post("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(ariel_copy_main_json))
 						
 					if main_result.status_code == 200:
-						main_result=requests.post("{}{}".format(dest_console_url,"config/deploy_action?type=INCREMENTAL"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"})
+						main_result=requests.post("{}{}".format(main_console_url,"config/deploy_action?type=INCREMENTAL"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
 						if main_result.status_code != 200:
 							print("main deploy failed")
 							api_in_error = True
