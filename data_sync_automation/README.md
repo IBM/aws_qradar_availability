@@ -7,9 +7,19 @@ This solution is an example that can be used as a starting point for implementin
 ## Pre-requisites
 As a starting point, we will assume that QRadar is already configured with a Main Site and Destination Site each in separate subnets and separate AZs but in the same VPC.  The example presented here represents Main and Destination deployments each with one Console and one Event Processor and with the Data Synchronization solution already set up. The reader should be familiar with this solution before attempting to add automation. See [Data Synchronization app Overview](https://www.ibm.com/support/knowledgecenter/SS42VS_SHR/com.ibm.dsapp.doc/c_Qapps_DS_intro.html)
 ## Step 1 - create an IAM policy and Role
-We will need an IAM policy to grant the Lambda function access to LoadBalancers, permit logging and so forth. In AWS IAM, create a new policy using the JSON in iam-policy.json.
+We will need an IAM policy to grant the Lambda function access to LoadBalancers, permit logging and so forth. In AWS IAM, create a new policy using the JSON in iam-policy.json and give it a meaningful name (e.g. manage_failover).
+
+Create an IAM role that can be assigned to the Lambda function and assign the newly created IAM policy to it. From the IAM -> roles page, create role, choose Lambda as the use case and attach the policy. Again, choose a name that is relevant (e.g. manage_failover).
 ## Step 2 - create an SNS topic
+The Lambda function needs a trigger for execution when a CloudWatch Alarm fires. Setup an SNS topic to receive notification when the alarm state happens. CloudWatch will send the notification this topic and the Lambda function will be triggered by that notification.
+
+In SNS -> Topics, create a topic. Make sure to set the type to Standard (FIFO types cannot be used as Lambda triggers). The name should be meaningful (e.g. manage_failover_trigger). None of the optional sections are required, click Create topic at the bottom.
 ## Step 3 - create a CloudWatch Alarm
+In CloudWatch -> Alarms, create alarm and select a metric. The one we need is in NetworkELB -> Target Group, per AZ Metrics. From the list of Metrics, choose the one named UnHealthyHostCount that corresponds to the QRadar load balancer and the AZ for the Main Site. This metric will track the count of unhealthy hosts (EPs) in our primary deployment. When all is well, it should be zero. Click the Select Metric button.
+
+Specify the conditions under which this metric will cause an alarm to be raised. In the Metric panel, change the statistic to Maximum and the Period to 1 minute. In the Conditions panel choose static, Greater/Equal and a threshold of 1. Open the Addition configuration section and set the datapoints to 3 out of 3. These conditions and thresholds are a good starting point but you may wish to tune them to be more sensitive. With these values it will require the UnHealthyHostCount to be 1 or higher for 3 minutes before the Lambda function is triggered. Click next.
+
+Configure the action to take when the alarm is raised. make sure the state is 'in Alarm' and select the SNS topic created above. Click next at the bottom and name the alarm (e.g. Main Site UnHealthyHostCount). Click next and then Create alarm.
 ## Step 4 - create a Lambda function
 ## Step 5 - configure the Lambda function
 
