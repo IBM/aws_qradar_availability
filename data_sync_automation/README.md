@@ -10,10 +10,10 @@ As a starting point, we will assume that QRadar is already configured with a Mai
 We will need an IAM policy to grant the Lambda function access to LoadBalancers, permit logging and so forth. In AWS IAM, create a new policy using the JSON in iam-policy.json and give it a meaningful name (e.g. manage_failover).
 
 Create an IAM role that can be assigned to the Lambda function and assign the newly created IAM policy to it. From the IAM -> roles page, create role, choose Lambda as the use case and attach the policy. Again, choose a name that is relevant (e.g. manage_failover).
-## Step 2 - create an SNS topic
-The Lambda function needs a trigger for execution when a CloudWatch Alarm fires. Setup an SNS topic to receive notification when the alarm state happens. CloudWatch will send the notification this topic and the Lambda function will be triggered by that notification.
+## Step 2 - create two SNS topics
+The Lambda function needs a trigger for execution when a CloudWatch Alarm fires. Setup the first SNS topic to receive notification when the alarm state happens. CloudWatch will send the notification this topic and the Lambda function will be triggered by that notification. The second topic will be used by the Lambda function to send notification to any subscribers when a failover happens.
 
-In SNS -> Topics, create a topic. Make sure to set the type to Standard (FIFO types cannot be used as Lambda triggers). The name should be meaningful (e.g. manage_failover_trigger). None of the optional sections are required, click Create topic at the bottom.
+In SNS -> Topics, create a topic. Make sure to set the type to Standard (FIFO types cannot be used as Lambda triggers). The name should be meaningful (e.g. manage_failover_trigger). None of the optional sections are required, click Create topic at the bottom. Repeat for a second topic name (e.g. manage_failover_notifications).
 ## Step 3 - create a CloudWatch Alarm
 In CloudWatch -> Alarms, create alarm and select a metric. The one we need is in NetworkELB -> Target Group, per AZ Metrics. From the list of Metrics, choose the one named UnHealthyHostCount that corresponds to the QRadar load balancer and the AZ for the Main Site. This metric will track the count of unhealthy hosts (EPs) in our primary deployment. When all is well, it should be zero. Click the Select Metric button.
 
