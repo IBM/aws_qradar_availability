@@ -71,14 +71,14 @@ def lambda_handler(event, context):
 
 		# Take actions when an Alarm is triggered
 		if alarm_trigger == 'ALARM':
-			dest_console_url="https://{}/api/".format(console_main)
+			dest_console_url="https://{}/api/".format(console_dest)
 			main_console_url="https://{}/api/".format(console_main)
-			logger.info(main_console_url)
-			
+
 			dr_config_dest=requests.get("{}{}".format(dest_console_url,"config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"})
 			if dr_config_dest.status_code != 200:
+				print("failed dest config")
 				api_in_error = True
-			else
+			else:
 				dr_config_dest_json=dr_config_dest.json()
 				logger.info(json.dumps(dr_config_dest_json,indent=3,sort_keys=True))
 				# if the destination site is DR-enabled and in STANDBY, activate it
@@ -87,25 +87,28 @@ def lambda_handler(event, context):
 					dr_config_dest_json['is_dr'] = 'PRIMARY'
 					dr_config_dest_json['ariel_copy_enabled'] = True
 					logger.info(json.dumps(dr_config_dest_json,indent=3,sort_keys=True))
-					dest_result=requests.post("{}{}".format(dest_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"},data=dr_config_dest_json)
+					dest_result=requests.post("{}{}".format(dest_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"},data=json.dumps(dr_config_dest_json))
 					if dest_result.status_code == 200:
 						# deploy dest site asap, before attemtping to reach the main site
 						dest_result=requests.post("{}{}".format(dest_console_url,"config/deploy_action?type=INCREMENTAL"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"})
 						if dest_result.status_code != 200:
+							print("dest deploy failed")
 							api_in_error = True
 					else:
+						print("dest config post failed")
 						api_in_error = True
 
 			if api_in_error:
 				sns_message = sns_message + "Attempted failover to destination failed, API failure!!"
-				send_sns(sns_message)
+				send_sns(accountid,region,az_name,elb_name,timestamp,alarm_name,sns_message)
 				return
 				
 			# TODO optionally remove the main site hosts from the target group to avoid mixed recovery
 			
 			# assuming we can still reach the main site console, deactivate it
-			dr_config_main=requests.get("{}{}".format("{}{}".format(main_console_url,"config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
+			dr_config_main=requests.get("{}{}".format(main_console_url,"config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
 			if dr_config_main.status_code != 200:
+				print("main config failed")
 				api_in_error = True
 			else:
 				dr_config_main_json = dr_config_main.json()
@@ -114,28 +117,30 @@ def lambda_handler(event, context):
 					dr_config_main_json['site_state'] = 'STANDBY'
 					dr_config_dest_json['ariel_copy_enabled'] = False
 					logger.info(json.dumps(dr_config_dest_json,indent=3,sort_keys=True))
-					main_result = requests.post("{}{}".format(main_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"},data=dr_config_main_json)
+					main_result = requests.post("{}{}".format(main_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"},data=json.dumps(dr_config_main_json))
 					if main_result.status_code != 200:
+						print("main post config failed")
 						api_in_error = True
 					else:
-						ariel_copy_main=requests.get("{}{}".format("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
+						ariel_copy_main=requests.get("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
 						if ariel_copy_main.status_code == 200:
 							ariel_copy_main_json = ariel_copy_main.json()
 							for profile in ariel_copy_main_json:
 								profile['enabled'] = False
 							logger.info(json.dumps(ariel_copy_main_json,indent=3,sort_keys=True))
-							copy_result=requests.post("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=ariel_copy_main_json)
+							#copy_result=requests.post("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(ariel_copy_main_json))
 						
 					if main_result.status_code == 200:
 						main_result=requests.post("{}{}".format(dest_console_url,"config/deploy_action?type=INCREMENTAL"),verify=False,headers={"SEC":token_dest,"Allow-Hidden":"true"})
 						if main_result.status_code != 200:
+							print("main deploy failed")
 							api_in_error = True
 					else:
 						api_in_error = True
 			
 			if api_in_error:
 				sns_message = sns_message + "Attempted failover to destination failed, API failure!!"
-				send_sns(sns_message)
+				send_sns(accountid,region,az_name,elb_name,timestamp,alarm_name,sns_message)
 				return
 
 	return
