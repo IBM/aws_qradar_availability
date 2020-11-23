@@ -56,4 +56,4 @@ Now, configure the trigger for the lambda function so that it will execute when 
 # Next Steps
 The failover automation is now in place. End-to-end testing will involve making one of the EPs in the Main site unvailable via the load balancer. This can be done by shutting it down, changing it's security group or any other method of interrupting the collection. With the defaults described above it will take several minutes. The failover can also be triggered by executing the labda function directly with a test event to simulate the Unhealthy target alarm and this is a good way to confirm the correct configuration and operation of the lambda function.
 
-Once an automated failover has occurred, returning service back to the main site can be done via the Data Synchromization App according to it's [documentation] (https://www.ibm.com/support/knowledgecenter/SS42VS_SHR/com.ibm.dsapp.doc/c_Qapps_DS_intro.html)
+Once an automated failover has occurred, returning service back to the main site can be done via the Data Synchromization App according to it's [documentation](https://www.ibm.com/support/knowledgecenter/SS42VS_SHR/com.ibm.dsapp.doc/c_Qapps_DS_intro.html)
