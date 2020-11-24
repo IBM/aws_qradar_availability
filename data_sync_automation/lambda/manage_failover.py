@@ -115,8 +115,8 @@ def lambda_handler(event, context):
 				logger.info(json.dumps(dr_config_main_json,indent=3,sort_keys=True))
 				if dr_config_main_json['is_dr'] == 'PRIMARY' and dr_config_main_json['site_state'] == 'ACTIVE':
 					dr_config_main_json['site_state'] = 'STANDBY'
-					dr_config_dest_json['ariel_copy_enabled'] = False
-					logger.info(json.dumps(dr_config_dest_json,indent=3,sort_keys=True))
+					dr_config_main_json['ariel_copy_enabled'] = False
+					logger.info(json.dumps(dr_config_main_json,indent=3,sort_keys=True))
 					main_result = requests.post("{}{}".format(main_console_url,"staged_config/disaster_recovery/disaster_recovery_config"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(dr_config_main_json))
 					if main_result.status_code != 200:
 						print("main post config failed")
@@ -126,9 +126,12 @@ def lambda_handler(event, context):
 						if ariel_copy_main.status_code == 200:
 							ariel_copy_main_json = ariel_copy_main.json()
 							for profile in ariel_copy_main_json:
-								profile['enabled'] = False
-							logger.info(json.dumps(ariel_copy_main_json,indent=3,sort_keys=True))
-							copy_result=requests.post("{}{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(ariel_copy_main_json))
+								pid=profile['id']
+								new_profile={elem: profile[elem] for elem in ('bandwidth_limit','destination_host_ip','destination_port','enabled','end_date','exclude_event_retention_bucket_ids','exclude_flow_retention_bucket_ids','frequency','start_date')}
+								new_profile['enabled'] = False
+								logger.info(json.dumps(new_profile,indent=3,sort_keys=True))
+								copy_result=requests.post("{}{}/{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles",pid),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(new_profile))
+								logger.info("Profile {} status: {}".format(pid,copy_result.status))
 						
 					if main_result.status_code == 200:
 						main_result=requests.post("{}{}".format(main_console_url,"config/deploy_action?type=INCREMENTAL"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
