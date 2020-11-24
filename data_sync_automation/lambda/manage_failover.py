@@ -82,7 +82,7 @@ def lambda_handler(event, context):
 				dr_config_dest_json=dr_config_dest.json()
 				logger.info(json.dumps(dr_config_dest_json,indent=3,sort_keys=True))
 				# if the destination site is DR-enabled and in STANDBY, activate it
-				if dr_config_dest_json['is_dr'] != 'FALSE' and dr_config_dest_json['site_state'] == 'STANDBY':
+				if dr_config_dest_json['is_dr'] == 'DR' and dr_config_dest_json['site_state'] == 'STANDBY':
 					dr_config_dest_json['site_state'] = 'ACTIVE'
 					dr_config_dest_json['is_dr'] = 'PRIMARY'
 					dr_config_dest_json['ariel_copy_enabled'] = True
@@ -131,7 +131,7 @@ def lambda_handler(event, context):
 								new_profile['enabled'] = False
 								logger.info(json.dumps(new_profile,indent=3,sort_keys=True))
 								copy_result=requests.post("{}{}/{}".format(main_console_url,"disaster_recovery/ariel_copy_profiles",pid),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"},data=json.dumps(new_profile))
-								logger.info("Profile {} status: {}".format(pid,copy_result.status))
+								logger.info("Profile {} status: {}".format(pid,copy_result.status_code))
 						
 					if main_result.status_code == 200:
 						main_result=requests.post("{}{}".format(main_console_url,"config/deploy_action?type=INCREMENTAL"),verify=False,headers={"SEC":token_main,"Allow-Hidden":"true"})
