@@ -1,0 +1,38 @@
+{
+  "AlarmName": "Primary Site UnHealthyHost",
+  "AlarmDescription": "Triggers when a host in the primary AZ fails its health checks.\n",
+  "AWSAccountId": "000000000000",
+  "NewStateValue": "ALARM",
+  "NewStateReason": "Threshold Crossed: 3 out of the last 3 datapoints [1.0 (21/11/20 20:21:00), 1.0 (21/11/20 20:20:00), 1.0 (21/11/20 20:19:00)] were greater than or equal to the threshold (1.0) (minimum 3 datapoints for OK -> ALARM transition).",
+  "StateChangeTime": "2020-11-21T20:24:57.547+0000",
+  "Region": "Canada (Central)",
+  "AlarmArn": "arn:aws:cloudwatch:ca-central-1:000000000000:alarm:Primary Site UnHealthyHost",
+  "OldStateValue": "OK",
+  "Trigger": {
+    "MetricName": "UnHealthyHostCount",
+    "Namespace": "AWS/NetworkELB",
+    "StatisticType": "Statistic",
+    "Statistic": "MAXIMUM",
+    "Unit": null,
+    "Dimensions": [
+      {
+        "value": "targetgroup/web01/7bdea1c711d6e07c",
+        "name": "TargetGroup"
+      },
+      {
+        "value": "ca-central-1b",
+        "name": "AvailabilityZone"
+      },
+      {
+        "value": "net/webz/e02b249de96b20c1",
+        "name": "LoadBalancer"
+      }
+    ],
+    "Period": 60,
+    "EvaluationPeriods": 3,
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Threshold": 1,
+    "TreatMissingData": "- TreatMissingData:                    missing",
+    "EvaluateLowSampleCountPercentile": ""
+  }
+}
