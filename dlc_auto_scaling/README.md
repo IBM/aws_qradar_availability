@@ -1,5 +1,5 @@
 # Creating a DLC auto-scaling solution
-One of the advantages of using DLC is that during an outage of its upstream QRadar, it will buffer incoming events and patiently wait for QRadar to return. This works very well with the solution described in [data_sync_automation](../aws_qradar_availability/data_sync_automation/) due to the breif outage that happens during QRadar DataSync failover. DLC's buffering will ensure that data is only delayed and not lost.
+One of the advantages of using DLC is that during an outage of its upstream QRadar, it will buffer incoming events and patiently wait for QRadar to return. This works very well with the solution described in [data_sync_automation](https://github.com/ibm-security-intelligence/aws_qradar_availability/tree/main/data_sync_automation) due to the breif outage that happens during QRadar DataSync failover. DLC's buffering will ensure that data is only delayed and not lost.
 
 However, this means that we're dependant upon the resiliency of DLC to maintain data flow. If the DLC should fail or if a datacenter or availability zone outage takes it out, then we could lose data or suffer an extended outage. The solution here is to setup AWS autoscaling to ensure that a DLC will be recovered/replaced automatically if it fails.
 
