@@ -30,35 +30,44 @@ This is done in three of stages. The first is simple: create an image from the D
 
 #### Create the image
 From the list of instances, select the DLC instance created above and from the Actions menu select "images and templates" and then "Create image". Give the image a meaningful name, make sure the volume settings are correct and optionally add a name tag to help distinguish it from other images.
+
 ![DLC Failover Concept](images/a001-create-image-menu.png)
 ![DLC Failover Concept](images/a002-create-image-name.png)
 
 #### Create a launch configuration
 From the EC2 sidebar, select Launch Configurations from the AUTO SCALING section and Create launch configuration. Choose a meaningful name, assuming you may create multiple DLC launch configurations over time.
+
 ![DLC Failover Concept](images/a003-launch-config-name.png)
 
 Choose the AMI image you just created. It will appear under 'My AMIs' and choose an instance type (likely similar to the original one). 
+
 ![DLC Failover Concept](images/a004-launch-ami.png)
 
 Be sure to choose a Security Group appropriate for DLC event collection, this will likely be the same existing one that was used to set up the initial instance above.  Also choose a key pair for SSH that will allow administrators access for support and trouble-shooting.
+
 ![DLC Failover Concept](images/a005-launch-sg-key.png)
 
 #### Create an auto-scaling group
 From the EC2 sidebar, select Auto Scaling Groups and "Create an Auto Scaling group". Once again, choose a meaningful name then "switch to launch configuration" and choose the configuration we just created. Click Next.
+
 ![DLC Failover Concept](images/a005-group-name-config.png)
 
 Choose the correct VPC for the DLC to run in and select a set of subnets that span availability zones. By selecting multiple subnets, each in different zones we allow the Auto Scaling to choose from alternatives when one zone has a failure which is the point of the exercise. Click Next.
+
 ![DLC Failover Concept](images/a007-group-subnets.png)
 
 You can leave all the advanced options as-is. If, at a later time, you determine that you need a load balancer or more frequent health checks you can create another auto-scaling group. Click Next.
 
 Group size should remain at the defaults (all capacities set to 1). Click Next.
+
 ![DLC Failover Concept](images/a008-group-size.png)
 
 Notifications are optional but recommended in production. Click next.
+
 ![DLC Failover Concept](images/a009-group-notify.png)
 
 Adding a name tag is a good idea so that the auto-scaled instances can be identified in a list of EC2 instances. Click Next, review the settings and create the group. 
+
 ![DLC Failover Concept](images/a010-group-tag.png)
 
 Within a few minutes the auto scaling will start up the inital instance. You can test the auto-scaling by shutting down or terminating that instance and see that it will be replaced within minutes.
